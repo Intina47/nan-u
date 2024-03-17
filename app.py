@@ -1,9 +1,11 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify
+import requests
 import pandas as pd 
 from jobspy import scrape_jobs
 import subprocess
 import csv
 import yaml
+import json
 
 app = Flask(__name__)
 
@@ -24,8 +26,19 @@ def scrape():
     jobs.to_csv("jobs.csv", quoting=csv.QUOTE_NONNUMERIC, escapechar="\\", index=False)
     subprocess.run(["python", "jsonify.py"])
 
-    jobs = pd.read_json("jobs.json")
-    return jsonify(jobs.to_dict(orient="records"))
+    # jobs = pd.read_json("jobs.json")
+    with open('jobs.json', 'r') as f:
+        jobs_json = json.load(f)
+    
+    message = f"Found {len(jobs_json)} new jobs:\n\n"
+    for job in jobs_json:
+        message += f"{job['title']} at {job['company']} in {job['location']}\n\n"
+    
+    webhook_url = config['webhook_url']
+    requests.post(webhook_url, json={"text": message})
+    print(f"webhook url:", webhook_url)
+
+    return jsonify({'message': f'Scraped {len(jobs)} jobs and updated jobs.json'})
 
 if __name__ == '__main__':
     app.run(debug=True)
