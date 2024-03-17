@@ -1,8 +1,8 @@
+webhook_url: https://discord.com/api/webhooks/1218984729370693794/iRZqjurvxabfBZUSTg-T90xrtYA6LkAcSmlQugDoK6SlT-Mh-07RlG6f8Fc8Cll_vo_M
 site_name:
     - linkedin
-    - indeed
 search_term: software engineer
 location: Dallas, TX
-results_wanted: 5
+results_wanted: 2
 hours_old: 72
 country_indeed: USA
