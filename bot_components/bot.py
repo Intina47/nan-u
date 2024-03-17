@@ -17,7 +17,7 @@ class Nanéu(discord.Client):
         print(f'We have logged in as {self.user}')
         self.scrape_and_post.start()
 
-    @tasks.loop(seconds=30)
+    @tasks.loop(hours=12)
     async def scrape_and_post(self):
         jobs = scrape_jobs(
             site_name= self.config['site_name'],
