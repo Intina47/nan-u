@@ -1,4 +1,6 @@
 from flask import Flask, jsonify
+import discord
+from discord.ext import tasks
 import requests
 import pandas as pd 
 from jobspy import scrape_jobs
@@ -6,49 +8,57 @@ import subprocess
 import csv
 import yaml
 import json
+import os
 
 app = Flask(__name__)
+discord_token = os.getenv('DISCORD_TOKEN')
 
-@app.route('/scrape', methods=['GET'])
-def scrape():
-    with open('./config/config.yaml', 'r') as f:
-        config = yaml.safe_load(f)
+with open('./config/config.yaml', 'r') as f:
+            config = yaml.safe_load(f)
 
-    jobs = scrape_jobs(
-        site_name= config['site_name'],
-        search_term=config['search_term'],
-        location=config['location'],
-        results_wanted=config['results_wanted'],
-        hours_old=config['hours_old'],
-        country_indeed=config['country_indeed'],
-    )
+class Nanéu(discord.Client):
+    async def on_ready(self):
+        print(f'We have logged in as {self.user}')
+        self.scrape_and_post.start()
 
-    jobs.to_csv("jobs.csv", quoting=csv.QUOTE_NONNUMERIC, escapechar="\\", index=False)
-    subprocess.run(["python", "jsonify.py"])
+    # async def on_message(self, message):
+    #     print(f'{message.channel}: {message.author}: {message.author.name}: {message.content}')
 
-    # jobs = pd.read_json("jobs.json")
-    with open('jobs.json', 'r') as f:
-        jobs_json = json.load(f)
-    
-    embeds = []
-    for job in jobs_json:
-        embed = {
-            "title": job['title'],
-            "url": job['job_url'],
-            "location": job['location'],
-            "footer": {
-                "text": job['company']
-            }
-        }
-        embeds.append(embed)
-    
-    webhook_url = config['webhook_url']
-    response = requests.post(webhook_url, json={"embeds": embeds})
-    
-    if response.status_code != 204:
-        print(f"Failed to send message to Discord: {response.status_code}, {response.text}")
+    @tasks.loop(seconds=30)
+    async def scrape_and_post(self):
+        jobs = scrape_jobs(
+            site_name= config['site_name'],
+            search_term=config['search_term'],
+            location=config['location'],
+            results_wanted=config['results_wanted'],
+            hours_old=config['hours_old'],
+            country_indeed=config['country_indeed'],
+        )
 
-    return jsonify({'message': f'Scraped {len(jobs)} jobs and updated jobs.json'})
+        jobs.to_csv("jobs.csv", quoting=csv.QUOTE_NONNUMERIC, escapechar="\\", index=False)
+        subprocess.run(["python", "jsonify.py"])
 
-if __name__ == '__main__':
-    app.run(debug=True)
+        with open('jobs.json', 'r') as f:
+            jobs_json = json.load(f)
+        
+        embeds = []
+        channel = self.get_channel(config['channel_id'])
+        for job in jobs_json:
+            embed = discord.Embed(
+                title=job['title'],
+                url=job['job_url'],
+                color=discord.Color.blue()
+            )
+            embed.add_field(name="Company", value=job['company'], inline=True)
+            embed.add_field(name="Location", value=job['location'], inline=True)
+            embeds.append(embed)
+        try:
+            for embed in embeds:
+                await channel.send(embed=embed)
+        except Exception as e:
+            print(f"Failed to send message to Discord: {str(e)}")
+            return
+        
+intents = discord.Intents.default()
+bot = Nanéu(intents=intents)
+bot.run(discord_token)
