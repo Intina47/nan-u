@@ -30,13 +30,23 @@ def scrape():
     with open('jobs.json', 'r') as f:
         jobs_json = json.load(f)
     
-    message = f"Found {len(jobs_json)} new jobs:\n\n"
+    embeds = []
     for job in jobs_json:
-        message += f"{job['title']} at {job['company']} in {job['location']}\n\n"
+        embed = {
+            "title": job['title'],
+            "url": job['job_url'],
+            "location": job['location'],
+            "footer": {
+                "text": job['company']
+            }
+        }
+        embeds.append(embed)
     
     webhook_url = config['webhook_url']
-    requests.post(webhook_url, json={"text": message})
-    print(f"webhook url:", webhook_url)
+    response = requests.post(webhook_url, json={"embeds": embeds})
+    
+    if response.status_code != 204:
+        print(f"Failed to send message to Discord: {response.status_code}, {response.text}")
 
     return jsonify({'message': f'Scraped {len(jobs)} jobs and updated jobs.json'})
 
