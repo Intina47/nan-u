@@ -14,7 +14,7 @@ class Setup(commands.Cog):
 
         await ctx.send("Please enter the job titles you're interested in (comma-separated). For example: software engineer, devops engineer.")
         search_terms = await self.bot.wait_for('message', check=check)
-        search_terms = search_terms.content.split(',')
+        search_terms = search_terms.content
 
         await ctx.send("Please enter the location where you're looking for jobs. For example: Edinburgh, Scotland, United Kingdom.")
         location = await self.bot.wait_for('message', check=check)
@@ -41,9 +41,6 @@ class Setup(commands.Cog):
         with open(file_path, 'w') as f:
             yaml.dump(config, f)
 
-        # Call the scrape_and_post method after setup is complete
-        await self.bot.scrape_and_post(ctx.channel.id)
-        
         await ctx.send("Setup complete!")
 
 async def setup(bot):
