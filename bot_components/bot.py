@@ -1,6 +1,6 @@
-# path: bot.py
+# path: bot_components/bot.py
 import discord
-from discord.ext import tasks
+from discord.ext import commands, tasks
 from jobspy import scrape_jobs
 from .config import load_config
 import subprocess
@@ -8,24 +8,37 @@ import csv
 import json
 import os
 
-class Nanéu(discord.Client):
+class Nanéu(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.config = load_config()
+        self.config = None
 
     async def on_ready(self):
         print(f'We have logged in as {self.user}')
         self.scrape_and_post.start()
 
+    async def on_guild_join(self, guild):
+        system_channel = guild.system_channel
+        if system_channel is not None and system_channel.permissions_for(guild.me).send_messages:
+            await system_channel.send("Welcome! Please run the `!setup` command to configure me for this server.")
+
     @tasks.loop(hours=12)
     async def scrape_and_post(self):
+        for guild in self.guilds:
+            for channel in guild.text_channels:
+                self.config = load_config(channel.id)
+                if self.config is not None:
+                    await self.scrape_and_post_to_discord(channel)
+                    print(f"Scraped and posted to Discord for channel {channel.id}")
+                else:
+                    print("Configuration not found. Please run the !setup command.")
+
+    async def scrape_and_post_to_discord(self, channel):
         jobs = scrape_jobs(
-            site_name= self.config['site_name'],
-            search_term=self.config['search_term'],
-            location=self.config['location'],
-            results_wanted=self.config['results_wanted'],
-            hours_old=self.config['hours_old'],
-            country_indeed=self.config['country_indeed'],
+            site_name=self.config['site_names'],
+            search_term=self.config['search_terms'],
+            refresh_rate=self.config['refresh_rate'],
+            webhook_url=self.config['webhook_url']
         )
 
         jobs.to_csv("jobs.csv", quoting=csv.QUOTE_NONNUMERIC, escapechar="\\", index=False)
@@ -35,7 +48,6 @@ class Nanéu(discord.Client):
             jobs_json = json.load(f)
         
         embeds = []
-        channel = self.get_channel(self.config['channel_id'])
         if not os.path.exists('posted_jobs.txt'):
             open('posted_jobs.txt', 'w').close()
         try:
@@ -65,4 +77,3 @@ class Nanéu(discord.Client):
                 print(f"Sent message to Discord: {embed.title}")
         except Exception as e:
             print(f"Failed to send message to Discord: {str(e)}")
-            return
