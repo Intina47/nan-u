@@ -2,11 +2,12 @@
 import discord
 from discord.ext import commands, tasks
 from jobspy import scrape_jobs
-from .config import load_config
+from bot_components.config import load_config
 import subprocess
 import csv
 import json
 import os
+import asyncio
 
 class Nanéu(commands.Bot):
     def __init__(self, *args, **kwargs):
@@ -14,7 +15,8 @@ class Nanéu(commands.Bot):
         self.config = None
 
     async def on_ready(self):
-        print(f'We have logged in as {self.user}')
+        print(f'scrapper is logged in as {self.user}')
+        print(f'Bot is a member of {len(self.guilds)} guilds') 
         self.scrape_and_post.start()
 
     async def on_guild_join(self, guild):
@@ -22,11 +24,16 @@ class Nanéu(commands.Bot):
         if system_channel is not None and system_channel.permissions_for(guild.me).send_messages:
             await system_channel.send("Welcome! Please run the `!setup` command to configure me for this server.")
 
-    @tasks.loop(hours=12)
+    @tasks.loop(seconds=60)
     async def scrape_and_post(self):
+        print('Entered scrape_and_post loop')  # Add this line
         for guild in self.guilds:
+            print(f'Checking guild {guild.id}')  # Add this line
             for channel in guild.text_channels:
-                self.config = load_config(channel.id)
+                print(f'Checking channel {channel.id}')
+                loop = asyncio.get_event_loop()
+                self.config = await loop.run_in_executor(None, load_config, channel.id)
+                print(f"Configuration for channel {channel.id}: {self.config}")  # Add this line
                 if self.config is not None:
                     await self.scrape_and_post_to_discord(channel)
                     print(f"Scraped and posted to Discord for channel {channel.id}")
@@ -34,15 +41,25 @@ class Nanéu(commands.Bot):
                     print("Configuration not found. Please run the !setup command.")
 
     async def scrape_and_post_to_discord(self, channel):
-        jobs = scrape_jobs(
+        print(f"2.Entered scrape_and_post_to_discord for channel {channel.id}")
+
+        try:
+            jobs = scrape_jobs(
             site_name=self.config['site_names'],
             search_term=self.config['search_terms'],
-            refresh_rate=self.config['refresh_rate'],
-            webhook_url=self.config['webhook_url']
-        )
+            location=self.config['location'],
+            results_wanted=self.config['results_wanted'],
+            hours_old=self.config['hours_old'],
+            country_indeed=self.config['country_indeed']
+            )
+        except Exception as e:
+            print(f"Failed to scrape jobs: {str(e)}")
+            return
 
+        print(f"Scraped jobs for channel {channel.id}")
         jobs.to_csv("jobs.csv", quoting=csv.QUOTE_NONNUMERIC, escapechar="\\", index=False)
         subprocess.run(["python", "bot_components/jsonify.py"])
+        print(f"Finished scrape_and_post_to_discord for channel {channel.id}")
 
         with open('jobs.json', 'r') as f:
             jobs_json = json.load(f)
