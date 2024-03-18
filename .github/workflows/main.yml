@@ -20,4 +20,5 @@ jobs:
                 pip install -r requirements.txt
         - name: 'Run bot'
           run: |
+                export DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}
                 python app.py
