@@ -18,10 +18,9 @@ async def load():
             print(f"Failed to load {filename}: not a .py file.")
 
 intents = discord.Intents.default()
-intents.guilds = True
 intents.messages = True 
 intents.message_content = True
-bot = Nanéu(command_prefix=get_prefix, intents=intents)
+bot = Nanéu(command_prefix=get_prefix,intents=intents)
 
 async def main():
     await load()
