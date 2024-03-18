@@ -24,7 +24,7 @@ class Nanéu(commands.Bot):
         if system_channel is not None and system_channel.permissions_for(guild.me).send_messages:
             await system_channel.send("Welcome! Please run the `!setup` command to configure me for this server.")
 
-    @tasks.loop(seconds=60)
+    @tasks.loop(hours=5)
     async def scrape_and_post(self):
         print('Entered scrape_and_post loop')  # Add this line
         for guild in self.guilds:
