@@ -1,4 +1,4 @@
-name: Run Nanéu
+name: Nanéu
 
 on:
     schedule:
