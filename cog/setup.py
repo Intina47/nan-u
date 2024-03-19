@@ -6,7 +6,8 @@ class Setup(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(name='setup', help="Configure the bot to your preferences.")
+    @commands.has_permissions(administrator=True, manage_guild=True, manage_channels=True)
     async def setup(self, ctx):
         def check(message):
             print(f"message.author: {message.author}, ctx.author: {ctx.author}, message.channel: {message.channel}, ctx.channel: {ctx.channel}")
@@ -42,6 +43,13 @@ class Setup(commands.Cog):
             yaml.dump(config, f)
 
         await ctx.send("Setup complete!")
+    
+    @setup.error
+    async def setup_error(self, ctx, error):
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send(f"Sorry {ctx.author} you don't have the right permissions to run {ctx.command} command")
+        else:
+            await ctx.send("An error occurred while setting up the bot. Please try again.")
 
 async def setup(bot):
     await bot.add_cog(Setup(bot))
