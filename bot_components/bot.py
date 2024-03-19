@@ -24,7 +24,7 @@ class Nanéu(commands.Bot):
         if system_channel is not None and system_channel.permissions_for(guild.me).send_messages:
             await system_channel.send("Welcome! Please run the `!setup` command to configure me for this server.")
 
-    @tasks.loop(hours=5)
+    @tasks.loop(hours=10)
     async def scrape_and_post(self):
         print('Entered scrape_and_post loop')  # Add this line
         for guild in self.guilds:
@@ -42,16 +42,18 @@ class Nanéu(commands.Bot):
 
     async def scrape_and_post_to_discord(self, channel):
         print(f"2.Entered scrape_and_post_to_discord for channel {channel.id}")
-
+        # make scraping run on a separate thread in the background to avoid blocking the event loop
+        loop = asyncio.get_event_loop()
+        scrape_jobs_args = {
+            'site_name': self.config['site_names'],
+            'search_term': self.config['search_terms'],
+            'location': self.config['location'],
+            'results_wanted': self.config['results_wanted'],
+            'hours_old': self.config['hours_old'],
+            'country_indeed': self.config['country_indeed']
+        }
         try:
-            jobs = scrape_jobs(
-            site_name=self.config['site_names'],
-            search_term=self.config['search_terms'],
-            location=self.config['location'],
-            results_wanted=self.config['results_wanted'],
-            hours_old=self.config['hours_old'],
-            country_indeed=self.config['country_indeed']
-            )
+            jobs = await loop.run_in_executor(None, lambda: scrape_jobs(**scrape_jobs_args))
         except Exception as e:
             print(f"Failed to scrape jobs: {str(e)}")
             return
