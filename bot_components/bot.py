@@ -22,7 +22,7 @@ class Nanéu(commands.Bot):
     async def on_guild_join(self, guild):
         system_channel = guild.system_channel
         if system_channel is not None and system_channel.permissions_for(guild.me).send_messages:
-            await system_channel.send("Welcome! Please run the `!setup` command to configure me for this server.")
+            await system_channel.send("Thanks for invite!\nPlease run ```@nanéu !setup``` command on the channel you wish me to post, to configure me to your liking.")
 
     @tasks.loop(hours=10)
     async def scrape_and_post(self):
