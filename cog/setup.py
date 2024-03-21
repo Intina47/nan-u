@@ -1,14 +1,14 @@
-# path: cog/setup.py
 import asyncio
 from discord.ext import commands
 import yaml
+import os
 
 class Setup(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.setup_processes = {}
 
-    @commands.command(name='setup', help="Configure the Nanéu to your preferences.")
+    @commands.command(name='setup', help="Configure Nanéu to your preferences.")
     @commands.has_permissions(administrator=True, manage_guild=True, manage_channels=True)
     async def setup(self, ctx):
         if ctx.author in self.setup_processes:
@@ -27,23 +27,18 @@ class Setup(commands.Cog):
 
     async def setup_process(self, ctx):
         config = await self.get_config(ctx)
-        self.save_config(ctx.channel.id, config)
-        return config    
+        if config is not None:
+            await self.save_config(ctx.channel.id, config)
+        return config   
     
     async def get_config(self, ctx):
         try:
             def check(message):
-                return message.author == ctx.author and message.channel == ctx.channel
+                return message.author.id == ctx.author.id and message.channel == ctx.channel
 
             search_terms = await self.ask_question(ctx, "Please enter the job titles you're interested in (comma-separated). For example: software engineer, devops engineer.", check)
             location = await self.ask_question(ctx, "Please enter the location where you're looking for jobs. For example: Edinburgh, Scotland, United Kingdom.", check)
-            while True:
-                hours_old = await self.ask_question(ctx, "Please enter the maximum age of the job postings you're interested in (in hours). For example, enter '72' for job postings that are up to 3 days old.", check)
-                try:
-                    hours_old = int(hours_old)
-                    break
-                except ValueError:
-                    await ctx.send("Invalid input. Please enter a number. Example: 72. for 3 days old job postings.")
+            hours_old = await self.ask_question(ctx, "Please enter the maximum age of the job postings you're interested in (in hours). For example, enter '72' for job postings that are up to 3 days old.", check)
             country_indeed = await self.ask_question(ctx, "Please enter the country where you're looking for jobs. For example: uk.", check)
 
             config = {
@@ -62,12 +57,24 @@ class Setup(commands.Cog):
             return None
     
     async def ask_question(self, ctx, question, check, conversion=str):
-        await ctx.send(question)
-        answer = await self.bot.wait_for('message', check=check)
-        return conversion(answer.content)
+        while True:  # Keep asking the question until a non-empty answer is received
+            await ctx.send(question)
+            try:
+                answer = await self.bot.wait_for('message', check=check, timeout=60)  # Wait for 60 seconds
+            except asyncio.TimeoutError:
+                print(f"No answer received for question: {question}")
+                return None
+            if answer.content.strip():  # Check if the answer is not an empty string
+                print(f"Received answer: {answer.content}")
+                return answer.content if conversion is str else await conversion(answer.content)
+            else:
+                await ctx.send("Your answer cannot be empty. Please try again.")
 
-    def save_config(self, channel_id, config):
+    async def save_config(self, channel_id, config):
         try:
+            configdir = './config'
+            if not os.path.exists(configdir):
+                os.makedirs(configdir)
             file_path = f'./config/config_{channel_id}.yaml'
             with open(file_path, 'w') as f:
                 yaml.dump(config, f)
