@@ -3,3 +3,4 @@ jobctl
 *.json
 __pycache__
 .env
+Python-3.10.0
