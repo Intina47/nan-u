@@ -26,10 +26,17 @@ class Setup(commands.Cog):
             await ctx.send("Setup complete!")
 
     async def setup_process(self, ctx):
-        config = await self.get_config(ctx)
-        if config is not None:
-            await self.save_config(ctx.channel.id, config)
-        return config   
+        try:
+            config = await asyncio.wait_for(self.get_config(ctx), timeout=60)
+            if config is not None:
+                await self.save_config(ctx.channel.id, config)
+            else:
+                await ctx.send("Setup cancelled due to inactivity.")
+        except asyncio.TimeoutError:
+            await ctx.send("Setup cancelled due to inactivity.")
+            config = None
+        return config
+ 
     
     async def get_config(self, ctx):
         try:
