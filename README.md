@@ -76,7 +76,7 @@ Contributions are what make the open-source community such an amazing place to l
 
 ## License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License. See [LICENSE](https://github.com/Intina47/nan-u/blob/main/LICENSE) for more information.
 
 ## Acknowledgements
 
