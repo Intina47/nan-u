@@ -2,6 +2,14 @@
 
 Nanéu is an open-source Discord bot designed to streamline and automate the process of fetching and sharing job postings within Discord communities. Leveraging powerful scraping techniques, Nanéu can be configured to retrieve job listings based on specific criteria such as job title, location, and how recent the postings are. 
 
+# Live Demo
+
+To see Nanéu in action and explore its features firsthand, we've set up a test server on Discord where you can interact with the bot. This server provides a live demonstration of Nanéu's capabilities and offers you a space to test its setup and job scraping functionalities without needing to install it on your own server initially.
+
+[Join our Test Discord Server](https://discord.com/channels/1220811373005508768/1220812061634859148)
+
+Please note that this server is intended for demonstration purposes and to give you a feel of how Nanéu operates in a real Discord environment. Feel free to play around with the bot commands and explore its features. If you have any questions or need assistance, our community and support team are active within the server to help you out.
+
 ## Features
 
 - **Customizable Job Searches**: Configure Nanéu to search for job postings based on titles, locations, and other preferences.
@@ -43,7 +51,7 @@ Nanéu is an open-source Discord bot designed to streamline and automate the pro
     ```bash
     python app.py
     ```
-2. Once the bot is running and connected to Discord, you can configure it in your server by using the `@nanéu setup` command in the desired channel.
+2. Once the bot is running and connected to Discord, you can configure it in your server by using the `<@your_bot_@> setup` command in the desired channel.
 
 ## Configuration
 
