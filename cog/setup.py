@@ -8,7 +8,7 @@ class Setup(commands.Cog):
         self.bot = bot
         self.setup_processes = {}
 
-    @commands.command(name='setup', help="Configure Nanéu to your preferences.")
+    @commands.command(name='setup', help="Configure Nanéu to your preferences. make sure you have the right permissions. which is administrator, manage_guild, manage_channels")
     @commands.has_permissions(administrator=True, manage_guild=True, manage_channels=True)
     async def setup(self, ctx):
         if ctx.author in self.setup_processes:
