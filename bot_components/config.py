@@ -1,3 +1,4 @@
+# path: bot_components/config.py
 import yaml
 import os
 
