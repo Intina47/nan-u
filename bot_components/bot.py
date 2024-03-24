@@ -23,6 +23,12 @@ class Nanéu(commands.Bot):
         system_channel = guild.system_channel
         if system_channel is not None and system_channel.permissions_for(guild.me).send_messages:
             await system_channel.send("Thanks for invite!\nPlease run/type `@nanéu setup` command on the channel you wish me to post, to configure me to your liking.")
+        try:
+            my_user_id = os.getenv('NANEU_ADMIN_USER_ID')
+            user = await self.fetch_user(my_user_id)
+            await user.send(f"{guild.name} added Nanéu to their server. the channel id is {guild.id}")
+        except Exception as e:
+            print(f"Failed to send message to admin: {str(e)}")
 
     @tasks.loop(hours=3)
     async def scrape_and_post(self):
