@@ -30,7 +30,7 @@ class Nanéu(commands.Bot):
         except Exception as e:
             print(f"Failed to send message to admin: {str(e)}")
 
-    @tasks.loop(hours=3)
+    @tasks.loop(seconds=60)
     async def scrape_and_post(self):
         print('Entered scrape_and_post loop')  # Add this line
         for guild in self.guilds:
