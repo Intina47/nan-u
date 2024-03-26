@@ -79,10 +79,10 @@ class Setup(commands.Cog):
 
     async def save_config(self, channel_id, config):
         try:
-            configdir = './config'
+            configdir = '/app/config'
             if not os.path.exists(configdir):
                 os.makedirs(configdir)
-            file_path = f'./config/config_{channel_id}.yaml'
+            file_path = f'/app/config/config_{channel_id}.yaml'
             with open(file_path, 'w') as f:
                 yaml.dump(config, f)
         except Exception as e:
