@@ -73,10 +73,11 @@ class Nanéu(commands.Bot):
             jobs_json = json.load(f)
         
         embeds = []
-        if not os.path.exists('posted_jobs.txt'):
-            open('posted_jobs.txt', 'w').close()
+        posted_jobs_file_path = '/app/config/posted_jobs.txt'
+        if not os.path.exists(posted_jobs_file_path):
+            open(posted_jobs_file_path, 'w').close()
         try:
-            with open('posted_jobs.txt', 'r') as f:
+            with open( posted_jobs_file_path, 'r') as f:
                 posted_jobs = [line.strip() for line in f]
         except Exception as e:
             print(f"Failed to read from posted_jobs.txt: {str(e)}")
@@ -86,7 +87,7 @@ class Nanéu(commands.Bot):
             if job_id in posted_jobs:
                 continue
             else:
-                with open('posted_jobs.txt', 'a') as f:
+                with open(posted_jobs_file_path, 'a') as f:
                     f.write(f"{job_id}\n")
                 embed = discord.Embed(
                     title=job['title'],
