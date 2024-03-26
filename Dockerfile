@@ -11,5 +11,8 @@ COPY . /app
 RUN pip install --no-cache-dir -r requirements.txt \
     && pip install pyyaml
 
+# expose port 80 to the outside world
+EXPOSE 80
+
 # Run app.py when the container launches
 CMD ["python", "app.py"]
