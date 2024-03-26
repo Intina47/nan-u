@@ -3,7 +3,7 @@ import yaml
 import os
 
 def load_config(channel_id):
-    file_path = f'./config/config_{channel_id}.yaml'
+    file_path = f'/app/config/config_{channel_id}.yaml'
     if not os.path.exists(file_path):
         print(f"Config file {file_path} does not exist")
         return None
