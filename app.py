@@ -1,21 +1,30 @@
 # path: app.py
-import asyncio
 import os
+import asyncio
 import discord
 from discord.ext import commands
+from dotenv import load_dotenv
 from bot_components.bot import Nanéu
+from utils.errors import DiscordTokenErrors
+
+# Load the .env file
+load_dotenv()
 
 def get_prefix(bot, message):
     prefix = f'<@!{bot.user.id}> !'
     return commands.when_mentioned_or(prefix)(bot, message)
 
 async def load():
-    for filename in os.listdir('./cog'):
-        if filename.endswith('.py'):
+    cog_dir = './cog'
+    for filename in os.listdir(cog_dir):
+        file_path = os.path.join(cog_dir, filename)
+        if os.path.isfile(file_path) and filename.endswith('.py'):
             await bot.load_extension(f'cog.{filename[:-3]}')
-            print(f"Loaded {filename}.")
-        else:
-            print(f"Failed to load {filename}: not a .py file.")
+            if bot.load_extension:
+                print(f'Loaded {filename[:-3]} cog')
+            else:
+                print(f'Failed to load {filename[:-3]} cog')
+
 
 intents = discord.Intents.default()
 intents.messages = True 
@@ -25,6 +34,14 @@ bot = Nanéu(command_prefix=get_prefix,intents=intents)
 async def main():
     await load()
     discord_token = os.getenv('DISCORD_TOKEN')
-    await bot.start(discord_token)
+    if discord_token is None:
+        DiscordTokenErrors.token_not_set_error()
+        return
+    else:
+        try:
+            await bot.start(discord_token)
+        except discord.LoginFailure:
+            DiscordTokenErrors.invalid_token_error()
+            return
 
 asyncio.run(main())
