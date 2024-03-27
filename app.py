@@ -15,6 +15,13 @@ def get_prefix(bot, message):
     return commands.when_mentioned_or(prefix)(bot, message)
 
 async def load():
+    """
+    Loads all the Python files in the 'cog' directory as extensions for the bot.
+
+    This function iterates over all the files in the 'cog' directory and loads each file
+    as an extension for the bot if it is a Python file (ends with '.py'). It prints a message
+    indicating whether each extension was successfully loaded or not.
+    """
     cog_dir = './cog'
     for filename in os.listdir(cog_dir):
         file_path = os.path.join(cog_dir, filename)

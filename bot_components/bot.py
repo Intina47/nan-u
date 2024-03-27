@@ -10,20 +10,50 @@ import os
 import asyncio
 
 class Nanéu(commands.Bot):
+    """
+    A custom bot class for Nanéu.
+
+    This class extends the `commands.Bot` class and provides additional functionality for the Nanéu bot.
+
+    Attributes:
+        config (dict): The configuration settings for the bot.
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.config = None
 
     async def on_ready(self):
+        """
+        Event handler for when the bot is ready.
+
+        This method is called when the bot has successfully logged in and is ready to start processing events.
+        It prints the bot's user information and the number of guilds it is a member of, and starts the `scrape_and_post` task.
+        """
         print(f'scrapper is logged in as {self.user}')
         print(f'Bot is a member of {len(self.guilds)} guilds') 
         self.scrape_and_post.start()
     
     async def close(self):
+        """
+        Closes the bot.
+
+        This method cancels the `scrape_and_post` task and then calls the `close` method of the base class.
+        """
         self.scrape_and_post.cancel()
         await super().close()
 
     async def on_guild_join(self, guild):
+        """
+        Event handler for when the bot joins a guild.
+
+        This method is called when the bot joins a new guild.
+        It sends a welcome message to the system channel of the guild (if the bot has permission to send messages),
+        and sends a notification message to the bot admin user.
+        
+        Args:
+            guild (discord.Guild): The guild that the bot joined.
+        """
         system_channel = guild.system_channel
         if system_channel is not None and system_channel.permissions_for(guild.me).send_messages:
             await system_channel.send("Thanks for invite!\nPlease run/type `@nanéu setup` command on the channel you wish me to post, to configure me to your liking.")
@@ -36,6 +66,14 @@ class Nanéu(commands.Bot):
 
     @tasks.loop(seconds=60)
     async def scrape_and_post(self):
+        """
+        Task that periodically scrapes job listings and posts them to Discord.
+
+        This task is scheduled to run every 60 seconds.
+        It iterates over all the guilds that the bot is a member of, and for each guild,
+        it iterates over the text channels and checks if there is a configuration for the channel.
+        If a configuration is found, it scrapes job listings and posts them to the channel.
+        """
         print('Entered scrape_and_post loop')
         for guild in self.guilds:
             print(f'Checking guild {guild.id}')
@@ -51,6 +89,15 @@ class Nanéu(commands.Bot):
                     print("Configuration not found. Please run the !setup command.")
 
     async def scrape_and_post_to_discord(self, channel):
+        """
+        Scrapes job listings and posts them to a Discord channel.
+
+        This method scrapes job listings based on the configuration settings for the given channel,
+        and then creates embeds for each job listing and sends them to the channel.
+
+        Args:
+            channel (discord.TextChannel): The channel to post the job listings to.
+        """
         print(f"2.Entered scrape_and_post_to_discord for channel {channel.id}")
         # make scraping run on a separate thread in the background to avoid blocking the event loop
         loop = asyncio.get_event_loop()

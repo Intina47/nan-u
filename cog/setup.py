@@ -4,6 +4,15 @@ from discord.ext import commands
 import yaml
 
 class Setup(commands.Cog):
+    """
+    A class representing the setup functionality of Nanéu bot.
+
+    This class provides methods to configure Nanéu to user preferences, such as job search settings.
+
+    Attributes:
+        bot (discord.ext.commands.Bot): The instance of the bot.
+        setup_processes (dict): A dictionary to store setup processes for each user.
+    """
     def __init__(self, bot):
         self.bot = bot
         self.setup_processes = {}
@@ -67,7 +76,7 @@ class Setup(commands.Cog):
         while True:  # Keep asking the question until a non-empty answer is received
             await ctx.send(question)
             try:
-                answer = await self.bot.wait_for('message', check=check, timeout=60)  # Wait for 60 seconds
+                answer = await self.bot.wait_for('message', check=check, timeout=120)
             except asyncio.TimeoutError:
                 print(f"No answer received for question: {question}")
                 return None
