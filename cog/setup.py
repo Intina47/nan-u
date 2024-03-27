@@ -1,7 +1,7 @@
+import os
 import asyncio
 from discord.ext import commands
 import yaml
-import os
 
 class Setup(commands.Cog):
     def __init__(self, bot):
