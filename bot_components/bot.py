@@ -18,6 +18,10 @@ class Nanéu(commands.Bot):
         print(f'scrapper is logged in as {self.user}')
         print(f'Bot is a member of {len(self.guilds)} guilds') 
         self.scrape_and_post.start()
+    
+    async def close(self):
+        self.scrape_and_post.cancel()
+        await super().close()
 
     async def on_guild_join(self, guild):
         system_channel = guild.system_channel
@@ -32,9 +36,9 @@ class Nanéu(commands.Bot):
 
     @tasks.loop(seconds=60)
     async def scrape_and_post(self):
-        print('Entered scrape_and_post loop')  # Add this line
+        print('Entered scrape_and_post loop')
         for guild in self.guilds:
-            print(f'Checking guild {guild.id}')  # Add this line
+            print(f'Checking guild {guild.id}')
             for channel in guild.text_channels:
                 print(f'Checking channel {channel.id}')
                 loop = asyncio.get_event_loop()
