@@ -36,10 +36,12 @@ Please note that this server is intended for demonstration purposes and to give 
     ```bash
     cd nan-u
     ```
-3. Install the required Python packages:
+3. Activate the `jobctl` virtual environment. A virtual environment is a self-contained Python environment that allows you to manage dependencies separately for each project. This makes your work easier by avoiding conflicts between different versions of libraries. The `jobctl` virtual environment comes with the project:
     ```bash
-    pip install -r requirements.txt
+    source jobctl/bin/activate
     ```
+Note: This command is for Unix-based systems like Linux. If you're using Windows, use `jobctl\Scripts\activate` instead.
+
 4. Create a `.env` file in the root directory and add your Discord bot token:
     ```plaintext
     DISCORD_TOKEN=your_discord_bot_token_here
@@ -60,7 +62,6 @@ Nanéu supports configuration through Discord commands. Currently, the bot can b
 - Job titles
 - Location
 - Maximum age of job postings
-- Specific job sites
 
 These settings can be adjusted by running the setup command in any channel where you want Nanéu to post job listings.
 
