@@ -22,6 +22,9 @@ class Nanéu(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.config = None
+        self.job_queue = asyncio.Queue()
+        self.queues = {}
+        self.send_jobs.start()
 
     async def on_ready(self):
         """
@@ -65,6 +68,18 @@ class Nanéu(commands.Bot):
             print(f"Failed to send message to admin: {str(e)}")
 
     @tasks.loop(seconds=60)
+    async def send_jobs(self):
+        for channel_id, queue in list(self.queues.items()):
+            if queue:
+                job = queue.popleft()
+                channel = self.get_channel(channel_id)
+                try:
+                    await channel.send(embed=job)
+                except Exception as e:
+                    print(f"Failed to send message to Discord: {str(e)}")
+            else:
+                del self.queues[channel_id]
+
     async def scrape_and_post(self):
         """
         Task that periodically scrapes job listings and posts them to Discord.
@@ -135,6 +150,9 @@ class Nanéu(commands.Bot):
             return
         for job in jobs_json:
             job_id = f"{job['job_url']},{self.config['channel_id']}"
+            if channel.id not in self.queues:
+                self.queues[channel.id] = asyncio.Queue()
+            self.queues[channel.id].put(job)
             if job_id in posted_jobs:
                 continue
             else:
