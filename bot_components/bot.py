@@ -3,6 +3,7 @@ import discord
 from discord.ext import commands, tasks
 from jobspy import scrape_jobs
 from bot_components.config import load_config
+from twitter_bot.twitter_manager import TwitterManager
 import subprocess
 import csv
 import json
@@ -88,7 +89,9 @@ class Nanéu(commands.Bot):
                 else:
                     print("Configuration not found. Please run the !setup command.")
 
+# TODO: this function post to twitter and discord for now
     async def scrape_and_post_to_discord(self, channel):
+        twitter_manager = TwitterManager()  # Initialize the TwitterManager
         """
         Scrapes job listings and posts them to a Discord channel.
 
@@ -133,11 +136,10 @@ class Nanéu(commands.Bot):
         except Exception as e:
             print(f"Failed to read from posted_jobs.txt: {str(e)}")
             return
+
         for job in jobs_json:
             job_id = f"{job['job_url']},{self.config['channel_id']}"
-            if job_id in posted_jobs:
-                continue
-            else:
+            if job_id not in posted_jobs:
                 with open(posted_jobs_file_path, 'a') as f:
                     f.write(f"{job_id}\n")
                 embed = discord.Embed(
@@ -148,6 +150,16 @@ class Nanéu(commands.Bot):
                 embed.add_field(name="Company", value=job['company'], inline=True)
                 embed.add_field(name="Location", value=job['location'], inline=True)
                 embeds.append(embed)
+
+                # check if it is possible to post to x today
+                try:
+                    if twitter_manager.can_post_today():
+                        twitter_manager.post_job(job)
+                    else:
+                        print("Twitter posting limit reached for today.")
+                except Exception as e:
+                    print(f"Error posting to Twitter: {e}")
+        
         try:
             for embed in embeds:
                 await channel.send(embed=embed)
