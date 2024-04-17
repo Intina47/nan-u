@@ -8,5 +8,7 @@ idna==3.6
 multidict==6.0.5
 typing_extensions==4.10.0
 yarl==1.9.4
-
-
+python-jobspy==1.1.51
+python-dotenv==1.0.1
+tweepy==4.14.0
+PyYAML==6.0.1
