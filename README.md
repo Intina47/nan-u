@@ -1,6 +1,5 @@
 # Nanéu
 ![image](https://github.com/Intina47/nan-u/assets/78519682/af2a686a-42a5-4093-88b9-5a79064176df)
-
 Nanéu is an open-source Discord bot designed to streamline and automate the process of fetching and sharing job postings within Discord communities. Leveraging powerful scraping techniques, Nanéu can be configured to retrieve job listings based on specific criteria such as job title, location, and how recent the postings are. 
 
 # Live Demo
